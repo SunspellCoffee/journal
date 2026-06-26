@@ -204,20 +204,19 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
             onChange={e => setRoastLevel(e.target.value)}
             options={ROAST_LEVELS}
           />
+          {cultivars.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5 content-start">
+              {cultivars.map(c => (
+                <span key={c} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-[--bg-elevated] border border-[--border] text-[--text-secondary]">
+                  {c}
+                  <button type="button" onClick={() => setCultivars(prev => prev.filter(x => x !== c))}>
+                    <X size={10} className="text-[--text-muted] hover:text-[--text-primary]" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          ) : <div />}
         </div>
-
-        {cultivars.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {cultivars.map(c => (
-              <span key={c} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-[--bg-elevated] border border-[--border] text-[--text-secondary]">
-                {c}
-                <button type="button" onClick={() => setCultivars(prev => prev.filter(x => x !== c))}>
-                  <X size={10} className="text-[--text-muted] hover:text-[--text-primary]" />
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
 
         {/* Flavor notes */}
         <div className="flex flex-col gap-1.5">
