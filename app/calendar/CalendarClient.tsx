@@ -249,7 +249,7 @@ export function CalendarClient({ coffees, settings, savedSchedule, userId }: Cal
                               {coffee.name}
                             </span>
                             <span className="text-[10px] text-[--text-muted]">
-                              {coffee.remaining_grams}g · {coffee.brews_remaining} brews left · {differenceInDays(new Date(), parseISO(coffee.roast_date))}d rested
+                              {coffee.remaining_grams}g · {coffee.brews_remaining} brews left · {differenceInDays(parseISO(dateStr), parseISO(coffee.roast_date))}d rested this day
                             </span>
                           </div>
                           <button

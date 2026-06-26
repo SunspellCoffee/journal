@@ -183,6 +183,10 @@ export function CoffeeDetailModal({ open, onClose, coffee, settings, onSuccess }
               <span className="text-[--text-primary]">{format(parseISO(coffee.roast_date), 'MMM d, yyyy')}</span>
             </div>
             <div className="flex justify-between text-xs">
+              <span className="text-[--text-muted]">Days rested</span>
+              <span className="text-[--text-secondary]">{differenceInDays(new Date(), parseISO(coffee.roast_date))}d</span>
+            </div>
+            <div className="flex justify-between text-xs">
               <span className="text-[--text-muted]">Ready to drink</span>
               <span className="text-emerald-400">{format(parseISO(coffee.ready_date), 'MMM d, yyyy')}</span>
             </div>
