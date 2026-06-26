@@ -1,0 +1,25 @@
+{
+  "name": "Journal — Coffee Manager",
+  "short_name": "Journal",
+  "description": "Track your specialty coffee bags and schedule brews",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0e0a06",
+  "theme_color": "#0e0a06",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "productivity", "lifestyle"]
+}
