@@ -185,33 +185,19 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
             ]}
           />
           <Input label="Process" value={process} onChange={e => setProcess(e.target.value)} placeholder="e.g. Washed" />
-          <div className="flex flex-col gap-1.5">
-              <Select
-                label="Cultivar"
-                value=""
-                onChange={e => {
-                  const val = e.target.value
-                  if (val && !cultivars.includes(val)) setCultivars(prev => [...prev, val])
-                  e.target.value = ''
-                }}
-                options={[
-                  { value: '', label: '— Add cultivar —' },
-                  ...CULTIVAR_LIST.filter(c => !cultivars.includes(c)).map(c => ({ value: c, label: c })),
-                ]}
-              />
-              {cultivars.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {cultivars.map(c => (
-                    <span key={c} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-[--bg-elevated] border border-[--border] text-[--text-secondary]">
-                      {c}
-                      <button type="button" onClick={() => setCultivars(prev => prev.filter(x => x !== c))}>
-                        <X size={10} className="text-[--text-muted] hover:text-[--text-primary]" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
+          <Select
+            label="Cultivar"
+            value=""
+            onChange={e => {
+              const val = e.target.value
+              if (val && !cultivars.includes(val)) setCultivars(prev => [...prev, val])
+              e.target.value = ''
+            }}
+            options={[
+              { value: '', label: '— Add cultivar —' },
+              ...CULTIVAR_LIST.filter(c => !cultivars.includes(c)).map(c => ({ value: c, label: c })),
+            ]}
+          />
           <Select
             label="Roast Level"
             value={roastLevel}
@@ -219,6 +205,19 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
             options={ROAST_LEVELS}
           />
         </div>
+
+        {cultivars.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {cultivars.map(c => (
+              <span key={c} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-[--bg-elevated] border border-[--border] text-[--text-secondary]">
+                {c}
+                <button type="button" onClick={() => setCultivars(prev => prev.filter(x => x !== c))}>
+                  <X size={10} className="text-[--text-muted] hover:text-[--text-primary]" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Flavor notes */}
         <div className="flex flex-col gap-1.5">
