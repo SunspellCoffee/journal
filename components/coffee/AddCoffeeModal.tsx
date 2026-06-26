@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
 import { useToast } from '@/components/ui/toast'
-import { COFFEE_COLORS, ROAST_LEVELS } from '@/types'
+import { COFFEE_COLORS, ROAST_LEVELS, CULTIVAR_LIST } from '@/types'
 
 const COFFEE_ORIGINS = [
   'Bolivia', 'Brazil', 'Burundi', 'Cameroon', 'China', 'Colombia', 'Congo (DRC)',
@@ -27,7 +27,7 @@ interface EditCoffeeData {
   supplier: string | null
   origin: string | null
   process: string | null
-  cultivar: string | null
+  cultivar: string[]
   roast_level: string | null
   flavor_notes: string[]
   weight_grams: number
@@ -56,7 +56,7 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
   const [supplier, setSupplier] = useState(editCoffee?.supplier ?? '')
   const [origin, setOrigin] = useState(editCoffee?.origin ?? '')
   const [process, setProcess] = useState(editCoffee?.process ?? '')
-  const [cultivar, setCultivar] = useState(editCoffee?.cultivar ?? '')
+  const [cultivars, setCultivars] = useState<string[]>(editCoffee?.cultivar ?? [])
   const [roastLevel, setRoastLevel] = useState(editCoffee?.roast_level ?? 'light')
   const [flavorInput, setFlavorInput] = useState('')
   const [flavorNotes, setFlavorNotes] = useState<string[]>(editCoffee?.flavor_notes ?? [])
@@ -105,7 +105,7 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
       supplier: supplier.trim() || null,
       origin: origin.trim() || null,
       process: process.trim() || null,
-      cultivar: cultivar.trim() || null,
+      cultivar: cultivars,
       roast_level: roastLevel || null,
       flavor_notes: flavorNotes,
       weight_grams: weight,
@@ -185,7 +185,33 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
             ]}
           />
           <Input label="Process" value={process} onChange={e => setProcess(e.target.value)} placeholder="e.g. Washed" />
-          <Input label="Cultivar" value={cultivar} onChange={e => setCultivar(e.target.value)} placeholder="e.g. Gesha" />
+          <div className="flex flex-col gap-1.5">
+              <Select
+                label="Cultivar"
+                value=""
+                onChange={e => {
+                  const val = e.target.value
+                  if (val && !cultivars.includes(val)) setCultivars(prev => [...prev, val])
+                  e.target.value = ''
+                }}
+                options={[
+                  { value: '', label: '— Add cultivar —' },
+                  ...CULTIVAR_LIST.filter(c => !cultivars.includes(c)).map(c => ({ value: c, label: c })),
+                ]}
+              />
+              {cultivars.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {cultivars.map(c => (
+                    <span key={c} className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-[--bg-elevated] border border-[--border] text-[--text-secondary]">
+                      {c}
+                      <button type="button" onClick={() => setCultivars(prev => prev.filter(x => x !== c))}>
+                        <X size={10} className="text-[--text-muted] hover:text-[--text-primary]" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           <Select
             label="Roast Level"
             value={roastLevel}

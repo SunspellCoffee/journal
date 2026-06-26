@@ -56,10 +56,10 @@ export function CoffeeCard({ coffee, onClick, brewSize = 20 }: CoffeeCardProps) 
                 <span className="text-xs text-[--text-muted]">{coffee.process}</span>
               </>
             )}
-            {coffee.cultivar && (
+            {coffee.cultivar.length > 0 && (
               <>
                 <span className="text-[--border-light] text-xs">·</span>
-                <span className="text-xs text-[--text-muted]">{coffee.cultivar}</span>
+                <span className="text-xs text-[--text-muted]">{coffee.cultivar.join(', ')}</span>
               </>
             )}
           </div>

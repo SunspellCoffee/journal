@@ -131,7 +131,7 @@ export function CoffeeDetailModal({ open, onClose, coffee, settings, onSuccess }
                 {coffee.supplier && <span className="text-sm text-[--text-secondary]">{coffee.supplier}</span>}
                 {coffee.origin && <><span className="text-[--border-light]">·</span><span className="text-sm text-[--text-muted]">{coffee.origin}</span></>}
                 {coffee.process && <><span className="text-[--border-light]">·</span><span className="text-sm text-[--text-muted]">{coffee.process}</span></>}
-                {coffee.cultivar && <><span className="text-[--border-light]">·</span><span className="text-sm text-[--text-muted]">{coffee.cultivar}</span></>}
+                {coffee.cultivar.length > 0 && <><span className="text-[--border-light]">·</span><span className="text-sm text-[--text-muted]">{coffee.cultivar.join(', ')}</span></>}
               </div>
             </div>
           </div>
@@ -194,10 +194,10 @@ export function CoffeeDetailModal({ open, onClose, coffee, settings, onSuccess }
               <span className="text-[--text-muted]">Roast level</span>
               <span className="text-[--text-secondary] capitalize">{coffee.roast_level ?? 'Unknown'}</span>
             </div>
-            {coffee.cultivar && (
+            {coffee.cultivar.length > 0 && (
               <div className="flex justify-between text-xs">
                 <span className="text-[--text-muted]">Cultivar</span>
-                <span className="text-[--text-secondary]">{coffee.cultivar}</span>
+                <span className="text-[--text-secondary]">{coffee.cultivar.join(', ')}</span>
               </div>
             )}
           </div>

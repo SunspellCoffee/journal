@@ -5,7 +5,7 @@ export interface Coffee {
   supplier: string | null
   origin: string | null
   process: string | null
-  cultivar: string | null
+  cultivar: string[]
   roast_level: 'ultra-light' | 'light' | 'medium-light' | 'medium' | 'medium-dark' | 'dark' | null
   flavor_notes: string[]
   weight_grams: number
@@ -81,6 +81,28 @@ export interface CoffeeWithStatus extends Coffee {
   days_until_ready: number
   days_in_peak: number
 }
+
+export const CULTIVAR_LIST = [
+  'Heirloom',
+  '74110', '74112', '74158', '74165',
+  'Acaiá', 'Arara',
+  'Batian', 'Bourbon',
+  'Casiopea', 'Castillo', 'Catimor', 'Catuai Red', 'Catuai Yellow', 'Caturra',
+  'Cenicafé 1', 'Centroamericano', 'Chandragiri', 'Chiroso', 'Colombia',
+  'Dega', 'Evaluna',
+  'Gesha',
+  'H3', 'Icatú',
+  'K7', 'Kurume',
+  'Laurina',
+  'Maragogipe', 'Milenio', 'Mocha', 'Mokka', 'Mundo Novo',
+  'Obatã', 'Orange Bourbon',
+  'Pacamara', 'Pacas', 'Pache', 'Paraíso', 'Pink Bourbon',
+  'Ruiru 11',
+  'S795', 'Sarchimor', 'Sidra', 'SL28', 'SL34', 'Starmaya', 'Sudan Rume',
+  'Tabi', 'Tekisic', 'Typica',
+  'Villa Sarchi', 'Wolisho', 'Wush Wush',
+  'Yellow Bourbon',
+]
 
 export const ROAST_LEVELS = [
   { value: 'ultra-light', label: 'Ultra Light' },
