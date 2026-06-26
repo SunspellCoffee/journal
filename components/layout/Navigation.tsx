@@ -44,8 +44,8 @@ export function Navigation() {
 
       {/* Mobile bottom bar */}
       <nav
-        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 flex bg-[--bg-surface] border-t border-[--border]"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-40 flex border-t border-[--border] backdrop-blur-md"
+        style={{ backgroundColor: 'color-mix(in srgb, var(--bg-surface) 80%, transparent)', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         {navItems.map(({ href, icon: Icon, label }) => {
           const active = pathname === href || pathname.startsWith(href + '/')
