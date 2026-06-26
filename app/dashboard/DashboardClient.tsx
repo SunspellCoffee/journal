@@ -58,8 +58,9 @@ export function DashboardClient({ coffees, settings, recentBrews, savedSchedule,
             <p className="text-xs text-[--text-muted]">{format(new Date(), 'EEEE, MMMM d')}</p>
             <h1 className="text-xl font-bold text-[--text-primary] mt-0.5">Dashboard</h1>
           </div>
-          <Button size="icon" onClick={() => setShowAddModal(true)}>
-            <Plus size={18} />
+          <Button size="sm" onClick={() => setShowAddModal(true)}>
+            <Plus size={14} />
+            Add Coffee
           </Button>
         </div>
       </div>

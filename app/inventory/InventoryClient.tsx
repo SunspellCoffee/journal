@@ -82,11 +82,12 @@ export function InventoryClient({ coffees, settings, brewCountMap, roasters }: I
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold text-[--text-primary]">Inventory</h1>
           <Button
-            size="icon"
+            size="sm"
             onClick={openAddModal}
             className={topTab !== 'coffees' ? 'invisible pointer-events-none' : ''}
           >
-            <Plus size={18} />
+            <Plus size={14} />
+            Add Coffee
           </Button>
         </div>
 
