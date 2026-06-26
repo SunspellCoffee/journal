@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { format } from 'date-fns'
 import { AppShell } from '@/components/layout/AppShell'
 import { DashboardClient } from './DashboardClient'
 
@@ -8,10 +9,13 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const [{ data: coffees }, { data: settings }, { data: brews }] = await Promise.all([
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
+
+  const [{ data: coffees }, { data: settings }, { data: brews }, { data: savedSchedule }] = await Promise.all([
     supabase.from('coffees').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
     supabase.from('user_settings').select('*').eq('user_id', user.id).single(),
     supabase.from('brews').select('*, coffee:coffees(name,color)').eq('user_id', user.id).order('brew_date', { ascending: false }).limit(10),
+    supabase.from('brew_schedule').select('*').eq('user_id', user.id).eq('scheduled_date', todayStr),
   ])
 
   const defaultSettings = {
@@ -31,6 +35,7 @@ export default async function DashboardPage() {
         coffees={coffees ?? []}
         settings={settings ?? defaultSettings}
         recentBrews={brews ?? []}
+        savedSchedule={savedSchedule ?? []}
         userId={user.id}
       />
     </AppShell>

@@ -8,16 +8,17 @@ import { AddCoffeeModal } from '@/components/coffee/AddCoffeeModal'
 import { BrewModal } from '@/components/coffee/BrewModal'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import type { Coffee, UserSettings, Brew, CoffeeWithStatus } from '@/types'
+import type { Coffee, UserSettings, Brew, BrewScheduleEntry, CoffeeWithStatus } from '@/types'
 
 interface DashboardClientProps {
   coffees: Coffee[]
   settings: UserSettings
   recentBrews: (Brew & { coffee?: { name: string; color: string } | null })[]
+  savedSchedule: BrewScheduleEntry[]
   userId: string
 }
 
-export function DashboardClient({ coffees, settings, recentBrews, userId }: DashboardClientProps) {
+export function DashboardClient({ coffees, settings, recentBrews, savedSchedule, userId }: DashboardClientProps) {
   const router = useRouter()
   const [showAddModal, setShowAddModal] = useState(false)
   const [brewTarget, setBrewTarget] = useState<Coffee | null>(null)
@@ -25,13 +26,24 @@ export function DashboardClient({ coffees, settings, recentBrews, userId }: Dash
   const enriched = coffees.map(c => enrichCoffee(c, settings))
   const active = enriched.filter(c => c.status === 'active')
   const lowStock = active.filter(c => c.brews_remaining <= settings.low_stock_threshold_brews && c.brews_remaining > 0)
-  const readyToday = active.filter(c => c.computed_status !== 'resting' && c.computed_status !== 'finished')
   const restingCount = active.filter(c => c.computed_status === 'resting').length
 
-  // Today's schedule
+  // Today's schedule — use saved overrides so dashboard matches the Schedule screen
   const todayStr = format(new Date(), 'yyyy-MM-dd')
-  const schedule = generateSchedule(readyToday, settings, new Map(), 7)
+  const scheduleOverrides = new Map<string, string[]>()
+  savedSchedule.forEach(s => {
+    const existing = scheduleOverrides.get(s.scheduled_date) ?? []
+    existing[s.brew_index] = s.coffee_id
+    scheduleOverrides.set(s.scheduled_date, existing)
+  })
+  const schedule = generateSchedule(enriched, settings, scheduleOverrides, 7)
+
+  // Subtract brews already logged today
+  const brewedTodayCount = recentBrews.filter(b => b.brew_date === todayStr).length
+  const remainingToday = Math.max(0, settings.brews_per_day - brewedTodayCount)
+
   const todaysBags = (schedule.get(todayStr) ?? [])
+    .slice(0, remainingToday)
     .map(id => enriched.find(c => c.id === id))
     .filter(Boolean) as CoffeeWithStatus[]
 
@@ -102,8 +114,8 @@ export function DashboardClient({ coffees, settings, recentBrews, userId }: Dash
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-[--text-secondary] uppercase tracking-wide">Today&apos;s Queue</h2>
-            <Badge variant={todaysBags.length > 0 ? 'success' : 'muted'}>
-              {todaysBags.length} of {settings.brews_per_day}
+            <Badge variant={remainingToday > 0 ? 'success' : 'muted'}>
+              {brewedTodayCount}/{settings.brews_per_day} done
             </Badge>
           </div>
           {todaysBags.length > 0 ? (
