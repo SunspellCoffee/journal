@@ -8,6 +8,16 @@ import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
 import { useToast } from '@/components/ui/toast'
 import { COFFEE_COLORS, ROAST_LEVELS } from '@/types'
+
+const COFFEE_ORIGINS = [
+  'Bolivia', 'Brazil', 'Burundi', 'Cameroon', 'China', 'Colombia', 'Congo (DRC)',
+  'Costa Rica', 'Cuba', 'Dominican Republic', 'Ecuador', 'El Salvador', 'Ethiopia',
+  'Guatemala', 'Haiti', 'Honduras', 'India', 'Indonesia', 'Ivory Coast', 'Jamaica',
+  'Kenya', 'Laos', 'Madagascar', 'Malawi', 'Mexico', 'Myanmar', 'Nicaragua',
+  'Panama', 'Papua New Guinea', 'Peru', 'Philippines', 'Puerto Rico', 'Rwanda',
+  'Sierra Leone', 'Solomon Islands', 'Tanzania', 'Thailand', 'Timor-Leste', 'Uganda',
+  'Vanuatu', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe',
+]
 import type { Roaster } from '@/types'
 import { X } from 'lucide-react'
 
@@ -165,7 +175,15 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
             <Input label="Coffee Name *" value={name} onChange={e => setName(e.target.value)} required placeholder="e.g. Marlon Bolaños Aji" />
           </div>
           <Input label="Supplier / Roaster" value={supplier} onChange={e => setSupplier(e.target.value)} placeholder="e.g. Shoebox Coffee" />
-          <Input label="Origin" value={origin} onChange={e => setOrigin(e.target.value)} placeholder="e.g. Colombia" />
+          <Select
+            label="Origin"
+            value={origin}
+            onChange={e => setOrigin(e.target.value)}
+            options={[
+              { value: '', label: '— Select —' },
+              ...COFFEE_ORIGINS.map(o => ({ value: o, label: o })),
+            ]}
+          />
           <Input label="Process" value={process} onChange={e => setProcess(e.target.value)} placeholder="e.g. Washed" />
           <Input label="Cultivar" value={cultivar} onChange={e => setCultivar(e.target.value)} placeholder="e.g. Gesha" />
           <Select
