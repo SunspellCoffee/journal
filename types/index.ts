@@ -98,9 +98,11 @@ export const CULTIVAR_LIST = [
   'Obatã', 'Orange Bourbon',
   'Pacamara', 'Pacas', 'Pache', 'Paraíso', 'Pink Bourbon',
   'Ruiru 11',
-  'S795', 'Sarchimor', 'Sidra', 'SL28', 'SL34', 'Starmaya', 'Sudan Rume',
-  'Tabi', 'Tekisic', 'Typica',
+  'S795', 'Sarchimor', 'Sidra', 'SL28', 'SL34', 'SL9', 'Starmaya', 'Sudan Rume',
+  'Ají', 'Bourbon Ají', 'Red Bourbon',
+  'Tabi', 'Tekisic', 'Typica', 'Typica Mejorado',
   'Villa Sarchi', 'Wolisho', 'Wush Wush',
+  'Ja\'adi', 'Odaini',
   'Yellow Bourbon',
 ]
 
