@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { format } from 'date-fns'
+import { format, differenceInDays, parseISO } from 'date-fns'
 import { Star } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Dialog } from '@/components/ui/dialog'
@@ -68,10 +68,34 @@ export function BrewModal({ open, onClose, onSuccess, coffee, brewSize }: BrewMo
 
   const displayRating = hoverRating || rating
 
+  const daysRested = differenceInDays(new Date(), parseISO(coffee.roast_date))
+
   return (
     <Dialog open={open} onClose={onClose} title={`Log Brew — ${coffee.name}`} size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3">
+
+        {/* Coffee info */}
+        {(coffee.flavor_notes.length > 0 || daysRested > 0) && (
+          <div className="flex flex-col gap-2 bg-[--bg-elevated] rounded-xl px-3 py-2.5">
+            {daysRested > 0 && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[--text-muted]">Days rested</span>
+                <span className="text-[--text-secondary] font-medium">{daysRested}d</span>
+              </div>
+            )}
+            {coffee.flavor_notes.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {coffee.flavor_notes.map(note => (
+                  <span key={note} className="px-2 py-0.5 rounded-full text-[10px] bg-[--bg-surface] border border-[--border] text-[--text-muted]">
+                    {note}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
           <Input
             label="Brew Date"
             type="date"

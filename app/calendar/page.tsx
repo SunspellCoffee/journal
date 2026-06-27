@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { format, subDays } from 'date-fns'
 import { AppShell } from '@/components/layout/AppShell'
 import { CalendarClient } from './CalendarClient'
 
@@ -8,10 +9,13 @@ export default async function CalendarPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
 
-  const [{ data: coffees }, { data: settings }, { data: schedule }] = await Promise.all([
+  const threeDaysAgo = format(subDays(new Date(), 3), 'yyyy-MM-dd')
+
+  const [{ data: coffees }, { data: settings }, { data: schedule }, { data: recentBrews }] = await Promise.all([
     supabase.from('coffees').select('*').eq('user_id', user.id).in('status', ['active', 'on_order']),
     supabase.from('user_settings').select('*').eq('user_id', user.id).single(),
     supabase.from('brew_schedule').select('*').eq('user_id', user.id).order('scheduled_date').order('brew_index'),
+    supabase.from('brews').select('coffee_id, brew_date').eq('user_id', user.id).gte('brew_date', threeDaysAgo),
   ])
 
   const defaultSettings = {
@@ -31,6 +35,7 @@ export default async function CalendarPage() {
         coffees={coffees ?? []}
         settings={settings ?? defaultSettings}
         savedSchedule={schedule ?? []}
+        recentBrews={recentBrews ?? []}
         userId={user.id}
       />
     </AppShell>

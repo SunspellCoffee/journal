@@ -14,6 +14,7 @@ interface CalendarClientProps {
   coffees: Coffee[]
   settings: UserSettings
   savedSchedule: BrewScheduleEntry[]
+  recentBrews: { coffee_id: string; brew_date: string }[]
   userId: string
 }
 
@@ -23,7 +24,7 @@ interface DragState {
   brewIndex: number
 }
 
-export function CalendarClient({ coffees, settings, savedSchedule, userId }: CalendarClientProps) {
+export function CalendarClient({ coffees, settings, savedSchedule, recentBrews, userId }: CalendarClientProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }))
@@ -58,6 +59,33 @@ export function CalendarClient({ coffees, settings, savedSchedule, userId }: Cal
     [enriched, settings, scheduleOverrides]
   )
 
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
+  const brewedSet = useMemo(() => new Set(recentBrews.map(b => `${b.brew_date}:${b.coffee_id}`)), [recentBrews])
+  const brewedTodayIds = useMemo(() => new Set(recentBrews.filter(b => b.brew_date === todayStr).map(b => b.coffee_id)), [recentBrews, todayStr])
+
+  // Rollover: coffees from the past 2 days in saved schedule that were never brewed
+  const rolloverIds = useMemo(() => {
+    const ids: string[] = []
+    for (let d = 1; d <= 2; d++) {
+      const pastDate = format(subDays(new Date(), d), 'yyyy-MM-dd')
+      const pastScheduled = scheduleOverrides.get(pastDate) ?? []
+      for (const id of pastScheduled) {
+        if (!brewedSet.has(`${pastDate}:${id}`) && !ids.includes(id) && coffeeMap.has(id)) {
+          ids.push(id)
+        }
+      }
+    }
+    return ids
+  }, [scheduleOverrides, brewedSet, coffeeMap])
+
+  // Today's display: rollovers first, then today's schedule, minus already brewed today
+  const todayDisplayCoffees = useMemo(() => {
+    const todayScheduled = schedule.get(todayStr) ?? []
+    return [...new Set([...rolloverIds, ...todayScheduled])]
+      .filter(id => !brewedTodayIds.has(id) && coffeeMap.has(id))
+      .map(id => coffeeMap.get(id)!)
+  }, [schedule, todayStr, rolloverIds, brewedTodayIds, coffeeMap])
+
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 
   const prevWeek = () => setWeekStart(d => subDays(d, 7))
@@ -66,6 +94,7 @@ export function CalendarClient({ coffees, settings, savedSchedule, userId }: Cal
 
   function getDayCoffees(date: Date): CoffeeWithStatus[] {
     const dateStr = format(date, 'yyyy-MM-dd')
+    if (dateStr === todayStr) return todayDisplayCoffees
     const ids = schedule.get(dateStr) ?? []
     return ids.map(id => coffeeMap.get(id)).filter(Boolean) as CoffeeWithStatus[]
   }
