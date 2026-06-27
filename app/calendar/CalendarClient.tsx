@@ -78,13 +78,16 @@ export function CalendarClient({ coffees, settings, savedSchedule, recentBrews, 
     return ids
   }, [scheduleOverrides, brewedSet, coffeeMap])
 
-  // Today's display: rollovers first, then today's schedule, minus already brewed today
+  // Today's display: rollovers first, then today's schedule, minus already brewed, capped at remaining slots
   const todayDisplayCoffees = useMemo(() => {
+    const brewedTodayCount = recentBrews.filter(b => b.brew_date === todayStr).length
+    const remainingSlots = Math.max(0, settings.brews_per_day - brewedTodayCount)
     const todayScheduled = schedule.get(todayStr) ?? []
     return [...new Set([...rolloverIds, ...todayScheduled])]
       .filter(id => !brewedTodayIds.has(id) && coffeeMap.has(id))
+      .slice(0, remainingSlots)
       .map(id => coffeeMap.get(id)!)
-  }, [schedule, todayStr, rolloverIds, brewedTodayIds, coffeeMap])
+  }, [schedule, todayStr, rolloverIds, brewedTodayIds, coffeeMap, recentBrews, settings.brews_per_day])
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 
