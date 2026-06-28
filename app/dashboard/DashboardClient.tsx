@@ -79,7 +79,7 @@ export function DashboardClient({ coffees, settings, recentBrews, savedSchedule,
           </div>
           <div className="bg-[--bg-surface] border border-[--border] rounded-2xl p-3 flex flex-col gap-1">
             <CoffeeIcon size={16} className="text-[--text-muted]" />
-            <span className="text-2xl font-bold text-[--text-primary]">{brewedTodayCount}/{settings.brews_per_day}</span>
+            <span className="text-2xl font-bold text-[--text-primary]">{brewedTodayCount}</span>
             <span className="text-xs text-[--text-muted]">Brews today</span>
           </div>
           <div className="bg-[--bg-surface] border border-[--border] rounded-2xl p-3 flex flex-col gap-1">
