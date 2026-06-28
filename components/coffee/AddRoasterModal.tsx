@@ -137,7 +137,14 @@ export function AddRoasterModal({ open, onClose, onSuccess, editRoaster }: AddRo
               )}
             </div>
             {showPresets && (
-              <div className="absolute z-50 top-full mt-1 w-full bg-[--bg-elevated] border border-[--border] rounded-xl overflow-hidden shadow-lg max-h-52 overflow-y-auto">
+              <div
+                className="absolute z-50 top-full mt-1 w-full rounded-xl overflow-hidden max-h-52 overflow-y-auto"
+                style={{
+                  backgroundColor: '#1a1208',
+                  border: '1px solid #3a2a18',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
+                }}
+              >
                 {filteredPresets.length === 0 ? (
                   <p className="text-xs text-[--text-muted] px-3 py-3">No roasters found</p>
                 ) : (
@@ -146,7 +153,10 @@ export function AddRoasterModal({ open, onClose, onSuccess, editRoaster }: AddRo
                       key={preset.slug}
                       type="button"
                       onClick={() => applyPreset(preset)}
-                      className="w-full text-left px-3 py-2.5 hover:bg-[--bg-hover] transition-colors flex items-center justify-between gap-3"
+                      className="w-full text-left px-3 py-2.5 transition-colors flex items-center justify-between gap-3"
+                      style={{ backgroundColor: 'transparent' }}
+                      onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2e2212')}
+                      onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                     >
                       <span className="text-sm text-[--text-primary] truncate">{preset.name}</span>
                       <span className="text-xs text-[--text-muted] shrink-0">{preset.country}</span>
