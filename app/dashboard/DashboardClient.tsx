@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { format } from 'date-fns'
-import { Plus, AlertTriangle, Coffee as CoffeeIcon, TrendingUp, Package } from 'lucide-react'
+import { Plus, AlertTriangle, Coffee as CoffeeIcon, CalendarDays, Package } from 'lucide-react'
 import { enrichCoffee, getStatusColor, getStatusLabel, generateSchedule } from '@/lib/utils'
 import { AddCoffeeModal } from '@/components/coffee/AddCoffeeModal'
 import { BrewModal } from '@/components/coffee/BrewModal'
@@ -38,8 +38,12 @@ export function DashboardClient({ coffees, settings, recentBrews, savedSchedule,
   })
   const schedule = generateSchedule(enriched, settings, scheduleOverrides, 7)
 
-  // Subtract brews already logged today
+  // Brews logged today
   const brewedTodayCount = recentBrews.filter(b => b.brew_date === todayStr).length
+
+  // Days of coffee left based on total brews remaining across active bags
+  const totalBrewsRemaining = active.reduce((sum, c) => sum + c.brews_remaining, 0)
+  const daysOfCoffeeLeft = Math.floor(totalBrewsRemaining / settings.brews_per_day)
   const remainingToday = Math.max(0, settings.brews_per_day - brewedTodayCount)
 
   const todaysBags = (schedule.get(todayStr) ?? [])
@@ -75,13 +79,13 @@ export function DashboardClient({ coffees, settings, recentBrews, savedSchedule,
           </div>
           <div className="bg-[--bg-surface] border border-[--border] rounded-2xl p-3 flex flex-col gap-1">
             <CoffeeIcon size={16} className="text-[--text-muted]" />
-            <span className="text-2xl font-bold text-[--text-primary]">{settings.brews_per_day}</span>
+            <span className="text-2xl font-bold text-[--text-primary]">{brewedTodayCount}/{settings.brews_per_day}</span>
             <span className="text-xs text-[--text-muted]">Brews today</span>
           </div>
           <div className="bg-[--bg-surface] border border-[--border] rounded-2xl p-3 flex flex-col gap-1">
-            <TrendingUp size={16} className="text-[--text-muted]" />
-            <span className="text-2xl font-bold text-[--text-primary]">{recentBrews.length}</span>
-            <span className="text-xs text-[--text-muted]">Recent brews</span>
+            <CalendarDays size={16} className="text-[--text-muted]" />
+            <span className="text-2xl font-bold text-[--text-primary]">{daysOfCoffeeLeft}</span>
+            <span className="text-xs text-[--text-muted]">Days of coffee left</span>
           </div>
         </div>
 
