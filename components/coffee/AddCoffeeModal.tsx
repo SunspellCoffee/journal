@@ -34,6 +34,7 @@ interface EditCoffeeData {
   remaining_grams: number
   roast_date: string
   rest_days: number
+  peak_start_days: number | null
   peak_end_days: number
   status: string
   color: string
@@ -63,6 +64,7 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
   const [weightGrams, setWeightGrams] = useState(String(editCoffee?.weight_grams ?? 250))
   const [roastDate, setRoastDate] = useState(editCoffee?.roast_date ?? format(new Date(), 'yyyy-MM-dd'))
   const [restDays, setRestDays] = useState(String(editCoffee?.rest_days ?? 7))
+  const [peakStartDays, setPeakStartDays] = useState(editCoffee?.peak_start_days != null ? String(editCoffee.peak_start_days) : '')
   const [peakEndDays, setPeakEndDays] = useState(String(editCoffee?.peak_end_days ?? 30))
   const [status, setStatus] = useState(editCoffee?.status ?? 'active')
   const [selectedColor, setSelectedColor] = useState(editCoffee?.color ?? COFFEE_COLORS[0])
@@ -76,6 +78,7 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
     if (roaster) {
       if (!supplier || supplier === '') setSupplier(roaster.name)
       setRestDays(String(roaster.default_rest_days))
+      if (roaster.default_peak_start_days != null) setPeakStartDays(String(roaster.default_peak_start_days))
       setPeakEndDays(String(roaster.default_peak_end_days))
       if (roaster.default_weight_grams) setWeightGrams(String(roaster.default_weight_grams))
     }
@@ -112,6 +115,7 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
       remaining_grams: remaining,
       roast_date: roastDate,
       rest_days: parseInt(restDays) || 7,
+      peak_start_days: peakStartDays ? parseInt(peakStartDays) : null,
       peak_end_days: parseInt(peakEndDays) || 30,
       status,
       color: selectedColor,
@@ -246,27 +250,22 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="min-w-0">
-            <Input
-              label="Weight (g) *"
-              type="number"
-              min={1}
-              value={weightGrams}
-              onChange={e => setWeightGrams(e.target.value)}
-              required
-              placeholder="250"
-            />
-          </div>
-          <div className="min-w-0">
-            <Input
-              label="Roast Date *"
-              type="date"
-              value={roastDate}
-              onChange={e => setRoastDate(e.target.value)}
-              required
-              className="h-[42px]"
-            />
-          </div>
+          <Input
+            label="Weight (g) *"
+            type="number"
+            min={1}
+            value={weightGrams}
+            onChange={e => setWeightGrams(e.target.value)}
+            required
+            placeholder="250"
+          />
+          <Input
+            label="Roast Date *"
+            type="date"
+            value={roastDate}
+            onChange={e => setRoastDate(e.target.value)}
+            required
+          />
           <Input
             label="Rest Days"
             type="number"
@@ -274,6 +273,15 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
             value={restDays}
             onChange={e => setRestDays(e.target.value)}
             hint="Days before ready to drink"
+          />
+          <Input
+            label="Peak Window Start"
+            type="number"
+            min={1}
+            value={peakStartDays}
+            onChange={e => setPeakStartDays(e.target.value)}
+            placeholder="e.g. 14"
+            hint="Days from roast"
           />
           <Input
             label="Peak Window End"

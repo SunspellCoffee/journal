@@ -13,6 +13,7 @@ export interface Coffee {
   roast_date: string
   purchase_date: string | null
   rest_days: number
+  peak_start_days: number | null
   peak_end_days: number
   status: 'active' | 'finished' | 'on_order'
   color: string

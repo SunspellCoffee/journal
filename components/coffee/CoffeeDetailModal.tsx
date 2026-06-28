@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { format, parseISO, differenceInDays } from 'date-fns'
+import { format, parseISO, differenceInDays, addDays } from 'date-fns'
 import { Edit2, Trash2, Coffee, Copy } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Dialog } from '@/components/ui/dialog'
@@ -91,6 +91,7 @@ export function CoffeeDetailModal({ open, onClose, coffee, settings, onSuccess }
       remaining_grams: coffee.weight_grams,
       roast_date: coffee.roast_date,
       rest_days: coffee.rest_days,
+      peak_start_days: coffee.peak_start_days,
       peak_end_days: coffee.peak_end_days,
       status: 'active',
       color: coffee.color,
@@ -190,6 +191,12 @@ export function CoffeeDetailModal({ open, onClose, coffee, settings, onSuccess }
               <span className="text-[--text-muted]">Ready to drink</span>
               <span className="text-emerald-400">{format(parseISO(coffee.ready_date), 'MMM d, yyyy')}</span>
             </div>
+            {coffee.peak_start_days != null && (
+              <div className="flex justify-between text-xs">
+                <span className="text-[--text-muted]">Peak window starts</span>
+                <span className="text-amber-400">{format(addDays(parseISO(coffee.roast_date), coffee.peak_start_days), 'MMM d, yyyy')}</span>
+              </div>
+            )}
             <div className="flex justify-between text-xs">
               <span className="text-[--text-muted]">Peak window ends</span>
               <span className="text-amber-400">{format(parseISO(coffee.peak_end_date), 'MMM d, yyyy')}</span>
