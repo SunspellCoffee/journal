@@ -246,22 +246,27 @@ export function AddCoffeeModal({ open, onClose, onSuccess, editCoffee, roasters 
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Input
-            label="Weight (g) *"
-            type="number"
-            min={1}
-            value={weightGrams}
-            onChange={e => setWeightGrams(e.target.value)}
-            required
-            placeholder="250"
-          />
-          <Input
-            label="Roast Date *"
-            type="date"
-            value={roastDate}
-            onChange={e => setRoastDate(e.target.value)}
-            required
-          />
+          <div className="min-w-0">
+            <Input
+              label="Weight (g) *"
+              type="number"
+              min={1}
+              value={weightGrams}
+              onChange={e => setWeightGrams(e.target.value)}
+              required
+              placeholder="250"
+            />
+          </div>
+          <div className="min-w-0">
+            <Input
+              label="Roast Date *"
+              type="date"
+              value={roastDate}
+              onChange={e => setRoastDate(e.target.value)}
+              required
+              className="h-[42px]"
+            />
+          </div>
           <Input
             label="Rest Days"
             type="number"

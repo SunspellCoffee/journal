@@ -95,7 +95,7 @@ export function BrewModal({ open, onClose, onSuccess, coffee, brewSize }: BrewMo
           </div>
         )}
 
-        <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Input
             label="Brew Date"
             type="date"

@@ -24,6 +24,7 @@ export function AddRoasterModal({ open, onClose, onSuccess, editRoaster }: AddRo
   const [country, setCountry] = useState(editRoaster?.country ?? '')
   const [notes, setNotes] = useState(editRoaster?.notes ?? '')
   const [restDays, setRestDays] = useState(String(editRoaster?.default_rest_days ?? 7))
+  const [peakStartDays, setPeakStartDays] = useState(editRoaster?.default_peak_start_days ? String(editRoaster.default_peak_start_days) : '')
   const [peakEndDays, setPeakEndDays] = useState(String(editRoaster?.default_peak_end_days ?? 30))
   const [defaultWeight, setDefaultWeight] = useState(editRoaster?.default_weight_grams ? String(editRoaster.default_weight_grams) : '')
   const [loading, setLoading] = useState(false)
@@ -42,6 +43,7 @@ export function AddRoasterModal({ open, onClose, onSuccess, editRoaster }: AddRo
       country: country.trim() || null,
       notes: notes.trim() || null,
       default_rest_days: parseInt(restDays) || 7,
+      default_peak_start_days: peakStartDays ? parseInt(peakStartDays) : null,
       default_peak_end_days: parseInt(peakEndDays) || 30,
       default_weight_grams: defaultWeight ? parseInt(defaultWeight) : null,
     }
@@ -101,13 +103,7 @@ export function AddRoasterModal({ open, onClose, onSuccess, editRoaster }: AddRo
               min={0}
               value={restDays}
               onChange={e => setRestDays(e.target.value)}
-            />
-            <Input
-              label="Peak Window End (days)"
-              type="number"
-              min={1}
-              value={peakEndDays}
-              onChange={e => setPeakEndDays(e.target.value)}
+              hint="Days before drinkable"
             />
             <Input
               label="Default Weight (g)"
@@ -116,6 +112,23 @@ export function AddRoasterModal({ open, onClose, onSuccess, editRoaster }: AddRo
               value={defaultWeight}
               onChange={e => setDefaultWeight(e.target.value)}
               placeholder="e.g. 250"
+            />
+            <Input
+              label="Peak Window Start"
+              type="number"
+              min={1}
+              value={peakStartDays}
+              onChange={e => setPeakStartDays(e.target.value)}
+              placeholder="e.g. 14"
+              hint="Days from roast"
+            />
+            <Input
+              label="Peak Window End"
+              type="number"
+              min={1}
+              value={peakEndDays}
+              onChange={e => setPeakEndDays(e.target.value)}
+              hint="Days from roast"
             />
           </div>
         </div>

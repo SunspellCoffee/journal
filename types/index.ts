@@ -30,6 +30,7 @@ export interface Roaster {
   country: string | null
   notes: string | null
   default_rest_days: number
+  default_peak_start_days: number | null
   default_peak_end_days: number
   default_weight_grams: number | null
   created_at: string
