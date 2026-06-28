@@ -96,7 +96,12 @@ export function generateSchedule(
     const dateStr = format(date, 'yyyy-MM-dd')
 
     if (existingSchedule.has(dateStr)) {
-      result.set(dateStr, existingSchedule.get(dateStr)!)
+      const savedIds = existingSchedule.get(dateStr)!
+      result.set(dateStr, savedIds)
+      savedIds.forEach(id => {
+        const rem = remaining.get(id)
+        if (rem !== undefined) remaining.set(id, Math.max(0, rem - settings.brew_size_grams))
+      })
       continue
     }
 
