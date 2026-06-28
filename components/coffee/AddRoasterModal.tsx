@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Dialog } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -7,6 +7,19 @@ import { Textarea } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/components/ui/toast'
 import type { Roaster } from '@/types'
+import presetRoasters from '@/data/preset-roasters.json'
+
+interface PresetRoaster {
+  slug: string
+  name: string
+  url: string
+  country: string
+  rest_days: number | null
+  default_weight_grams: number | null
+  peak_start_days: number | null
+  peak_end_days: number | null
+  notes: string
+}
 
 interface AddRoasterModalProps {
   open: boolean
@@ -28,6 +41,39 @@ export function AddRoasterModal({ open, onClose, onSuccess, editRoaster }: AddRo
   const [peakEndDays, setPeakEndDays] = useState(String(editRoaster?.default_peak_end_days ?? 30))
   const [defaultWeight, setDefaultWeight] = useState(editRoaster?.default_weight_grams ? String(editRoaster.default_weight_grams) : '')
   const [loading, setLoading] = useState(false)
+  const [presetSearch, setPresetSearch] = useState('')
+  const [showPresets, setShowPresets] = useState(false)
+  const presetRef = useRef<HTMLDivElement>(null)
+
+  const filteredPresets = useMemo(() => {
+    if (!presetSearch.trim()) return presetRoasters as PresetRoaster[]
+    const q = presetSearch.toLowerCase()
+    return (presetRoasters as PresetRoaster[]).filter(r =>
+      r.name.toLowerCase().includes(q) || r.country.toLowerCase().includes(q)
+    )
+  }, [presetSearch])
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (presetRef.current && !presetRef.current.contains(e.target as Node)) {
+        setShowPresets(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  function applyPreset(preset: PresetRoaster) {
+    setName(preset.name)
+    setWebsite(preset.url.replace(/^https?:\/\//, ''))
+    setCountry(preset.country)
+    if (preset.rest_days != null) setRestDays(String(preset.rest_days))
+    if (preset.peak_start_days != null) setPeakStartDays(String(preset.peak_start_days))
+    if (preset.peak_end_days != null) setPeakEndDays(String(preset.peak_end_days))
+    if (preset.default_weight_grams != null) setDefaultWeight(String(preset.default_weight_grams))
+    setPresetSearch('')
+    setShowPresets(false)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -67,6 +113,51 @@ export function AddRoasterModal({ open, onClose, onSuccess, editRoaster }: AddRo
   return (
     <Dialog open={open} onClose={onClose} title={isEdit ? 'Edit Roaster' : 'Add Roaster'} size="md">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+
+        {/* Preset picker — only show when adding, not editing */}
+        {!isEdit && (
+          <div ref={presetRef} className="relative">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Start from a known roaster…"
+                value={presetSearch}
+                onFocus={() => setShowPresets(true)}
+                onChange={e => { setPresetSearch(e.target.value); setShowPresets(true) }}
+                className="w-full px-3 py-2.5 rounded-xl text-sm bg-[--bg-elevated] border border-[--border] text-[--text-primary] placeholder:text-[--text-muted] focus:border-[--accent] focus:outline-none transition-colors"
+              />
+              {presetSearch && (
+                <button
+                  type="button"
+                  onClick={() => { setPresetSearch(''); setShowPresets(false) }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[--text-muted] hover:text-[--text-primary]"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+            {showPresets && (
+              <div className="absolute z-50 top-full mt-1 w-full bg-[--bg-elevated] border border-[--border] rounded-xl overflow-hidden shadow-lg max-h-52 overflow-y-auto">
+                {filteredPresets.length === 0 ? (
+                  <p className="text-xs text-[--text-muted] px-3 py-3">No roasters found</p>
+                ) : (
+                  filteredPresets.map(preset => (
+                    <button
+                      key={preset.slug}
+                      type="button"
+                      onClick={() => applyPreset(preset)}
+                      className="w-full text-left px-3 py-2.5 hover:bg-[--bg-hover] transition-colors flex items-center justify-between gap-3"
+                    >
+                      <span className="text-sm text-[--text-primary] truncate">{preset.name}</span>
+                      <span className="text-xs text-[--text-muted] shrink-0">{preset.country}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         <Input
           label="Roaster Name *"
           value={name}
