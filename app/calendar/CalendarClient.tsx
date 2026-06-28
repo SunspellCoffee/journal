@@ -78,18 +78,19 @@ export function CalendarClient({ coffees, settings, savedSchedule, recentBrews, 
     return ids
   }, [scheduleOverrides, brewedSet, coffeeMap])
 
-  // Today's display: rollover first, then today's scheduled, then any extra brews made today
-  // All shown — brewed ones are darkened in the UI, unbrewed ones show the Log button
+  // Today's display:
+  // - Planned slots = brews_per_day coffees: rollovers fill first, today's schedule fills the rest
+  // - Plus any extra coffees actually brewed today beyond the planned set
+  // - Brewed ones stay visible but darkened in the UI
   const todayDisplayCoffees = useMemo(() => {
     const todayScheduledIds = schedule.get(todayStr) ?? []
-    // Extra coffees brewed today that weren't in today's schedule
-    const extraBrewedIds = [...brewedTodayIds].filter(
-      id => !todayScheduledIds.includes(id) && !rolloverIds.includes(id) && coffeeMap.has(id)
-    )
-    return [...new Set([...rolloverIds, ...todayScheduledIds, ...extraBrewedIds])]
+    const plannedIds = [...new Set([...rolloverIds, ...todayScheduledIds])]
       .filter(id => coffeeMap.has(id))
-      .map(id => coffeeMap.get(id)!)
-  }, [schedule, todayStr, rolloverIds, brewedTodayIds, coffeeMap])
+      .slice(0, settings.brews_per_day)
+    const extraBrewedIds = [...brewedTodayIds]
+      .filter(id => !plannedIds.includes(id) && coffeeMap.has(id))
+    return [...plannedIds, ...extraBrewedIds].map(id => coffeeMap.get(id)!)
+  }, [schedule, todayStr, rolloverIds, brewedTodayIds, coffeeMap, settings.brews_per_day])
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 
