@@ -2,7 +2,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { format, addDays, subDays, startOfWeek, parseISO, isToday, isPast, isSameDay, differenceInDays } from 'date-fns'
-import { ChevronLeft, ChevronRight, RefreshCw, RotateCcw, Coffee as CoffeeIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Coffee as CoffeeIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { enrichCoffee, generateSchedule } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -191,11 +191,10 @@ export function CalendarClient({ coffees, settings, savedSchedule, recentBrews, 
         <div className="flex items-center justify-between mb-3">
           <h1 className="text-xl font-bold text-[--text-primary]">Schedule</h1>
           <div className="flex gap-2">
-            <Button variant="ghost" size="icon" onClick={resetSchedule} title="Reset to auto">
-              <RotateCcw size={15} />
+            <Button variant="ghost" size="sm" onClick={resetSchedule}>
+              Reset to auto
             </Button>
             <Button size="sm" loading={saving} onClick={saveSchedule}>
-              <RefreshCw size={13} />
               Save
             </Button>
           </div>
