@@ -17,12 +17,15 @@ export function getCoffeeStatus(coffee: Coffee): CoffeeStatus {
   if (isBefore(today, readyDate)) return 'resting'
   if (isAfter(today, peakEndDate)) return 'fading'
 
-  const peakStartDays = coffee.rest_days
-  const totalPeakDays = coffee.peak_end_days - peakStartDays
-  const daysIntoPeak = differenceInDays(today, readyDate)
+  if (coffee.peak_start_days != null) {
+    const peakStartDate = addDays(roastDate, coffee.peak_start_days)
+    return isBefore(today, peakStartDate) ? 'ready' : 'peak'
+  }
 
-  if (daysIntoPeak <= totalPeakDays * 0.4) return 'ready'
-  return 'peak'
+  // Fallback: first 40% of the window is 'ready', rest is 'peak'
+  const totalPeakDays = coffee.peak_end_days - coffee.rest_days
+  const daysIntoPeak = differenceInDays(today, readyDate)
+  return daysIntoPeak <= totalPeakDays * 0.4 ? 'ready' : 'peak'
 }
 
 export function enrichCoffee(coffee: Coffee, settings: UserSettings, brewsCompleted = 0): CoffeeWithStatus {
