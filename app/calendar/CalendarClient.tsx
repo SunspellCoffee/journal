@@ -78,16 +78,18 @@ export function CalendarClient({ coffees, settings, savedSchedule, recentBrews, 
     return ids
   }, [scheduleOverrides, brewedSet, coffeeMap])
 
-  // Today's display: rollovers first, then today's schedule, minus already brewed, capped at remaining slots
+  // Today's display: rollover first, then today's scheduled, then any extra brews made today
+  // All shown — brewed ones are darkened in the UI, unbrewed ones show the Log button
   const todayDisplayCoffees = useMemo(() => {
-    const brewedTodayCount = recentBrews.filter(b => b.brew_date === todayStr).length
-    const remainingSlots = Math.max(0, settings.brews_per_day - brewedTodayCount)
-    const todayScheduled = schedule.get(todayStr) ?? []
-    return [...new Set([...rolloverIds, ...todayScheduled])]
-      .filter(id => !brewedTodayIds.has(id) && coffeeMap.has(id))
-      .slice(0, remainingSlots)
+    const todayScheduledIds = schedule.get(todayStr) ?? []
+    // Extra coffees brewed today that weren't in today's schedule
+    const extraBrewedIds = [...brewedTodayIds].filter(
+      id => !todayScheduledIds.includes(id) && !rolloverIds.includes(id) && coffeeMap.has(id)
+    )
+    return [...new Set([...rolloverIds, ...todayScheduledIds, ...extraBrewedIds])]
+      .filter(id => coffeeMap.has(id))
       .map(id => coffeeMap.get(id)!)
-  }, [schedule, todayStr, rolloverIds, brewedTodayIds, coffeeMap, recentBrews, settings.brews_per_day])
+  }, [schedule, todayStr, rolloverIds, brewedTodayIds, coffeeMap])
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 
@@ -261,40 +263,46 @@ export function CalendarClient({ coffees, settings, savedSchedule, recentBrews, 
                   {/* Coffee pills */}
                   {dayCoffees.length > 0 && (
                     <div className="flex flex-col gap-1.5">
-                      {dayCoffees.map((coffee, idx) => (
-                        <div
-                          key={`${coffee.id}-${idx}`}
-                          draggable={!past}
-                          onDragStart={e => handleDragStart(e, coffee.id, dateStr, idx)}
-                          className={`flex items-center gap-2 rounded-lg px-3 py-2 cursor-grab active:cursor-grabbing select-none transition-opacity ${
-                            dragging?.coffeeId === coffee.id && dragging.fromDate === dateStr && dragging.brewIndex === idx
-                              ? 'opacity-40'
-                              : 'opacity-100'
-                          }`}
-                          style={{
-                            backgroundColor: coffee.color + '22',
-                            borderLeft: `3px solid ${coffee.color}`,
-                          }}
-                        >
-                          <div className="flex-1 min-w-0">
-                            <span className="text-xs font-medium text-[--text-primary] truncate block">
-                              {coffee.name}
-                            </span>
-                            <span className="text-[10px] text-[--text-muted]">
-                              {coffee.remaining_grams}g · {coffee.brews_remaining} brews left · {differenceInDays(parseISO(dateStr), parseISO(coffee.roast_date))}d rested this day
-                            </span>
-                          </div>
-                          <button
-                            onClick={e => { e.stopPropagation(); setBrewTarget(coffee) }}
-                            className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer"
-                            style={{ backgroundColor: coffee.color + '33', color: coffee.color }}
-                            title="Log brew"
+                      {dayCoffees.map((coffee, idx) => {
+                        const isBrewed = today && brewedTodayIds.has(coffee.id)
+                        const isDragging = dragging?.coffeeId === coffee.id && dragging.fromDate === dateStr && dragging.brewIndex === idx
+                        return (
+                          <div
+                            key={`${coffee.id}-${idx}`}
+                            draggable={!past && !isBrewed}
+                            onDragStart={e => handleDragStart(e, coffee.id, dateStr, idx)}
+                            className={`flex items-center gap-2 rounded-lg px-3 py-2 select-none transition-opacity ${
+                              isBrewed ? 'opacity-35 cursor-default' : isDragging ? 'opacity-40 cursor-grabbing' : 'opacity-100 cursor-grab active:cursor-grabbing'
+                            }`}
+                            style={{
+                              backgroundColor: coffee.color + '22',
+                              borderLeft: `3px solid ${coffee.color}`,
+                            }}
                           >
-                            <CoffeeIcon size={10} />
-                            Log
-                          </button>
-                        </div>
-                      ))}
+                            <div className="flex-1 min-w-0">
+                              <span className="text-xs font-medium text-[--text-primary] truncate block">
+                                {coffee.name}
+                              </span>
+                              <span className="text-[10px] text-[--text-muted]">
+                                {coffee.remaining_grams}g · {coffee.brews_remaining} brews left · {differenceInDays(parseISO(dateStr), parseISO(coffee.roast_date))}d rested this day
+                              </span>
+                            </div>
+                            {!isBrewed ? (
+                              <button
+                                onClick={e => { e.stopPropagation(); setBrewTarget(coffee) }}
+                                className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer"
+                                style={{ backgroundColor: coffee.color + '33', color: coffee.color }}
+                                title="Log brew"
+                              >
+                                <CoffeeIcon size={10} />
+                                Log
+                              </button>
+                            ) : (
+                              <span className="shrink-0 text-[10px] text-[--text-muted]">Brewed</span>
+                            )}
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
                 </div>
