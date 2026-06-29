@@ -83,6 +83,13 @@ export function CalendarClient({ coffees, settings, savedSchedule, recentBrews, 
   // - Plus any extra coffees actually brewed today beyond the planned set
   // - Brewed ones stay visible but darkened in the UI
   const todayDisplayCoffees = useMemo(() => {
+    // If today has been explicitly saved/dragged, respect those IDs directly — no rollover cap
+    if (scheduleOverrides.has(todayStr)) {
+      const explicitIds = (scheduleOverrides.get(todayStr) ?? []).filter(id => coffeeMap.has(id))
+      const extraBrewedIds = [...brewedTodayIds].filter(id => !explicitIds.includes(id) && coffeeMap.has(id))
+      return [...explicitIds, ...extraBrewedIds].map(id => coffeeMap.get(id)!)
+    }
+    // Auto-generated: rollovers fill first, then today's schedule, capped at brews_per_day
     const todayScheduledIds = schedule.get(todayStr) ?? []
     const plannedIds = [...new Set([...rolloverIds, ...todayScheduledIds])]
       .filter(id => coffeeMap.has(id))
@@ -90,7 +97,7 @@ export function CalendarClient({ coffees, settings, savedSchedule, recentBrews, 
     const extraBrewedIds = [...brewedTodayIds]
       .filter(id => !plannedIds.includes(id) && coffeeMap.has(id))
     return [...plannedIds, ...extraBrewedIds].map(id => coffeeMap.get(id)!)
-  }, [schedule, todayStr, rolloverIds, brewedTodayIds, coffeeMap, settings.brews_per_day])
+  }, [schedule, todayStr, scheduleOverrides, rolloverIds, brewedTodayIds, coffeeMap, settings.brews_per_day])
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
 

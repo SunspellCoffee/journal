@@ -1,7 +1,7 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
+import { format, subDays } from 'date-fns'
 import { Plus, AlertTriangle, Coffee as CoffeeIcon, CalendarDays, Package } from 'lucide-react'
 import { enrichCoffee, getStatusColor, getStatusLabel, generateSchedule } from '@/lib/utils'
 import { AddCoffeeModal } from '@/components/coffee/AddCoffeeModal'
@@ -15,28 +15,73 @@ interface DashboardClientProps {
   settings: UserSettings
   recentBrews: (Brew & { coffee?: { name: string; color: string } | null })[]
   savedSchedule: BrewScheduleEntry[]
+  recentBrewsForRollover: { coffee_id: string; brew_date: string }[]
   userId: string
 }
 
-export function DashboardClient({ coffees, settings, recentBrews, savedSchedule, userId }: DashboardClientProps) {
+export function DashboardClient({ coffees, settings, recentBrews, savedSchedule, recentBrewsForRollover, userId }: DashboardClientProps) {
   const router = useRouter()
   const [showAddModal, setShowAddModal] = useState(false)
   const [brewTarget, setBrewTarget] = useState<Coffee | null>(null)
 
-  const enriched = coffees.map(c => enrichCoffee(c, settings))
+  const enriched = useMemo(() => coffees.map(c => enrichCoffee(c, settings)), [coffees, settings])
   const active = enriched.filter(c => c.status === 'active')
   const lowStock = active.filter(c => c.brews_remaining <= settings.low_stock_threshold_brews && c.brews_remaining > 0)
   const restingCount = active.filter(c => c.computed_status === 'resting').length
 
-  // Today's schedule — use saved overrides so dashboard matches the Schedule screen
   const todayStr = format(new Date(), 'yyyy-MM-dd')
-  const scheduleOverrides = new Map<string, string[]>()
-  savedSchedule.forEach(s => {
-    const existing = scheduleOverrides.get(s.scheduled_date) ?? []
-    existing[s.brew_index] = s.coffee_id
-    scheduleOverrides.set(s.scheduled_date, existing)
-  })
-  const schedule = generateSchedule(enriched, settings, scheduleOverrides, 7)
+
+  const coffeeMap = useMemo(() => new Map(enriched.map(c => [c.id, c])), [enriched])
+
+  const scheduleOverrides = useMemo(() => {
+    const map = new Map<string, string[]>()
+    savedSchedule.forEach(s => {
+      const existing = map.get(s.scheduled_date) ?? []
+      existing[s.brew_index] = s.coffee_id
+      map.set(s.scheduled_date, existing)
+    })
+    return map
+  }, [savedSchedule])
+
+  const schedule = useMemo(() =>
+    generateSchedule(enriched, settings, scheduleOverrides, 7),
+    [enriched, settings, scheduleOverrides]
+  )
+
+  // Rollover: same logic as Calendar — unbrewed coffees from past 2 days
+  const brewedSet = useMemo(() =>
+    new Set(recentBrewsForRollover.map(b => `${b.brew_date}:${b.coffee_id}`)),
+    [recentBrewsForRollover]
+  )
+  const brewedTodayIds = useMemo(() =>
+    new Set(recentBrewsForRollover.filter(b => b.brew_date === todayStr).map(b => b.coffee_id)),
+    [recentBrewsForRollover, todayStr]
+  )
+  const rolloverIds = useMemo(() => {
+    const ids: string[] = []
+    for (let d = 1; d <= 2; d++) {
+      const pastDate = format(subDays(new Date(), d), 'yyyy-MM-dd')
+      const pastScheduled = scheduleOverrides.get(pastDate) ?? []
+      for (const id of pastScheduled) {
+        if (!brewedSet.has(`${pastDate}:${id}`) && !ids.includes(id) && coffeeMap.has(id)) {
+          ids.push(id)
+        }
+      }
+    }
+    return ids
+  }, [scheduleOverrides, brewedSet, coffeeMap])
+
+  // Today's queue: same logic as Calendar's todayDisplayCoffees
+  const todaysBags = useMemo(() => {
+    const todayScheduledIds = schedule.get(todayStr) ?? []
+    const plannedIds = [...new Set([...rolloverIds, ...todayScheduledIds])]
+      .filter(id => coffeeMap.has(id))
+      .slice(0, settings.brews_per_day)
+    // Only show unbrewed ones in the dashboard queue
+    return plannedIds
+      .filter(id => !brewedTodayIds.has(id))
+      .map(id => coffeeMap.get(id)!)
+  }, [schedule, todayStr, rolloverIds, brewedTodayIds, coffeeMap, settings.brews_per_day])
 
   // Brews logged today
   const brewedTodayCount = recentBrews.filter(b => b.brew_date === todayStr).length
@@ -45,11 +90,6 @@ export function DashboardClient({ coffees, settings, recentBrews, savedSchedule,
   const totalBrewsRemaining = active.reduce((sum, c) => sum + c.brews_remaining, 0)
   const daysOfCoffeeLeft = Math.floor(totalBrewsRemaining / settings.brews_per_day)
   const remainingToday = Math.max(0, settings.brews_per_day - brewedTodayCount)
-
-  const todaysBags = (schedule.get(todayStr) ?? [])
-    .slice(0, remainingToday)
-    .map(id => enriched.find(c => c.id === id))
-    .filter(Boolean) as CoffeeWithStatus[]
 
   const refresh = useCallback(() => router.refresh(), [router])
 
